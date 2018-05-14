@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Allison Creely, 2018, LGPLv3 License
+# Edited: Matei Ciobotaru 2018-05-14
 # Rock 64 GPIO Library for Python
 
 # Import modules
@@ -8,6 +9,7 @@ import os.path
 from multiprocessing import Process, Value
 from time import time
 from time import sleep
+from platform import release
 
 # Define static module variables
 var_gpio_root = '/sys/class/gpio'
@@ -26,10 +28,40 @@ PUD_DOWN = 1
 VERSION = '0.6.3'
 RPI_INFO = {'P1_REVISION': 3, 'RAM': '1024M', 'REVISION': 'a22082', 'TYPE': 'Pi 3 Model B', 'PROCESSOR': 'BCM2837', 'MANUFACTURER': 'Embest'}
 
-# Define GPIO arrays
+# Define GPIO arrays, according to kernel version
+
 ROCK_valid_channels = [27, 32, 33, 34, 35, 36, 37, 38, 64, 65, 67, 68, 69, 76, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 96, 97, 98, 100, 101, 102, 103, 104]
+
 BOARD_to_ROCK = [0, 0, 0, 89, 0, 88, 0, 0, 64, 0, 65, 0, 67, 0, 0, 100, 101, 0, 102, 97, 0, 98, 103, 96, 104, 0, 76, 68, 69, 0, 0, 0, 38, 32, 0, 33, 37, 34, 36, 0, 35, 0, 0, 81, 82, 87, 83, 0, 0, 80, 79, 85, 84, 27, 86, 0, 0, 0, 0, 0, 0, 89, 88]
+
 BCM_to_ROCK = [68, 69, 89, 88, 81, 87, 83, 76, 104, 98, 97, 96, 38, 32, 64, 65, 37, 80, 67, 33, 36, 35, 100, 101, 102, 103, 34, 82]
+
+
+# From kernel version 4.4.103 up, the GPIO pins have an offset of 1000
+# Check kernel version and add the offset if needed
+
+def offset(vers):
+
+	try:
+		kver = release().split('-')[0].split('.')
+		major = float('.'.join(kver[:2]))
+		minor = int(kver[2])
+
+		if major >= 4.4 and minor >= int(vers):
+# Apply offset to channel lists
+
+			global ROCK_valid_channels 
+			ROCK_valid_channels = [ channel + 1000 for channel in ROCK_valid_channels ]
+			global BOARD_to_ROCK 
+			BOARD_to_ROCK = [ channel + 1000 for channel in BOARD_to_ROCK ]
+			global BCM_to_ROCK 
+			BCM_to_ROCK = [ channel + 1000 for channel in BCM_to_ROCK ]
+		else:
+			pass
+	except Exception as err:
+		print("Error: Unable to set offset for kernel version > 4.4.103: %s" % err)
+
+offset(103)
 
 # Define dynamic module variables
 gpio_mode = None
