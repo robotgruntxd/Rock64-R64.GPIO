@@ -7,7 +7,8 @@ A Python GPIO library for the Rock64 single-board computer ([RPi.GPIO](https://s
 A re-implementation of the RPi.GPIO library for the Rock64. Currently under development.<br>
 
 I found that on kernel version 4.4.124 the pin channels are offset by 1000, so I added a function ("offset") to check the kernel version and add the offset accordingly.
-On the Pine64 forum thread from the "Resources" I read that this offset is rpesent since kernel version 4.4.103 and as such the function is configured to add the offset starting with that minor release.
+
+On the Pine64 forum thread (view "Resources" below) I read that this offset is present since kernel version 4.4.103 and as such the function is configured to add the offset starting with that minor release.
 
 See [the wiki](https://github.com/Leapo/Rock64-R64.GPIO/wiki) for documentation on [Functions](https://github.com/Leapo/Rock64-R64.GPIO/wiki/Functions) and [GPIO Modes](https://github.com/Leapo/Rock64-R64.GPIO/wiki/GPIO-Modes).
 
