@@ -69,7 +69,7 @@ def offset(kverOffset, valueOffset):
             pass
 
     except ValueError as err:
-        print("Invalid kernel offset version and/or offset value passed to offset(): {0}".format(err))
+        print("Invalid kernel version and/or offset value passed to offset(): {0}".format(err))
     except Exception as err:
         print("Error: Unable to set GPIO channel offset: {0}".format(err))
 
