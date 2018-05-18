@@ -10,6 +10,8 @@ I found that on kernel version 4.4.124 the pin channels are offset by 1000, so I
 
 On the Pine64 forum thread (view "Resources" below) I read that this offset is present since kernel version 4.4.103 and as such the function is configured to add the offset starting with that minor release.
 
+The offset can be easily edited in the "_GPIO.py" file to suit new offsets that may arrise with new kernel releases.
+
 See [the wiki](https://github.com/Leapo/Rock64-R64.GPIO/wiki) for documentation on [Functions](https://github.com/Leapo/Rock64-R64.GPIO/wiki/Functions) and [GPIO Modes](https://github.com/Leapo/Rock64-R64.GPIO/wiki/GPIO-Modes).
 
 **R64-GPIO-test.py**<br>
