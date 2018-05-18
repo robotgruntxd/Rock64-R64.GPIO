@@ -28,7 +28,7 @@ PUD_DOWN = 1
 VERSION = '0.6.3'
 RPI_INFO = {'P1_REVISION': 3, 'RAM': '1024M', 'REVISION': 'a22082', 'TYPE': 'Pi 3 Model B', 'PROCESSOR': 'BCM2837', 'MANUFACTURER': 'Embest'}
 
-# Define GPIO arrays, according to kernel version
+# Define GPIO arrays
 
 ROCK_valid_channels = [27, 32, 33, 34, 35, 36, 37, 38, 64, 65, 67, 68, 69, 76, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 96, 97, 98, 100, 101, 102, 103, 104]
 
@@ -38,30 +38,43 @@ BCM_to_ROCK = [68, 69, 89, 88, 81, 87, 83, 76, 104, 98, 97, 96, 38, 32, 64, 65, 
 
 
 # From kernel version 4.4.103 up, the GPIO pins have an offset of 1000
-# Check kernel version and add the offset if needed
+# Edit values on below 2 lines in case the GPIO channel 
+# offset value changes with newer kernel versions.
 
-def offset(vers):
+KverOffset = '4.4.103'
+valueOffset = 1000
 
-	try:
-		kver = release().split('-')[0].split('.')
-		major = float('.'.join(kver[:2]))
-		minor = int(kver[2])
+# This line is needed when setting the GPIO.ROCK channels
 
-		if major >= 4.4 and minor >= int(vers):
+ROCK_Channel_Offset = 0
+
+def offset(kverOffset, valueOffset):
+    try:
+        kverOffset = int(kverOffset.replace('.', ''))
+        kverLocal = int(release().split('-')[0].replace('.', ''))
+	value = int(valueOffset)
+
+        if kverLocal >= kverOffset:
 # Apply offset to channel lists
 
-			global ROCK_valid_channels 
-			ROCK_valid_channels = [ channel + 1000 for channel in ROCK_valid_channels ]
-			global BOARD_to_ROCK 
-			BOARD_to_ROCK = [ channel + 1000 for channel in BOARD_to_ROCK ]
-			global BCM_to_ROCK 
-			BCM_to_ROCK = [ channel + 1000 for channel in BCM_to_ROCK ]
-		else:
-			pass
-	except Exception as err:
-		print("Error: Unable to set offset for kernel version > 4.4.103: %s" % err)
+            global ROCK_Channel_Offset
+            ROCK_Channel_Offset = value
+            global ROCK_valid_channels 
+            ROCK_valid_channels = [ channel + value for channel in ROCK_valid_channels ]
+            global BOARD_to_ROCK 
+            BOARD_to_ROCK = [ channel + value for channel in BOARD_to_ROCK ]
+            global BCM_to_ROCK 
+            BCM_to_ROCK = [ channel + value for channel in BCM_to_ROCK ]
+        else:
+            pass
 
-offset(103)
+    except ValueError as err:
+        print("Invalid kernel offset version and/or offset value passed to offset(): {0}".format(err))
+    except Exception as err:
+        print("Error: Unable to set GPIO channel offset: {0}".format(err))
+
+
+offset(KverOffset, valueOffset)
 
 # Define dynamic module variables
 gpio_mode = None
@@ -89,7 +102,7 @@ def get_gpio_number(channel):
         if gpio_mode == BCM:
             channel_new = BCM_to_ROCK[channel]
         if gpio_mode == ROCK:
-            channel_new = channel
+            channel_new = channel + ROCK_Channel_Offset
         # Check that the GPIO is valid
         if channel_new in ROCK_valid_channels:
             return channel_new
@@ -102,7 +115,7 @@ def get_gpio_number(channel):
 
 def gpio_function(channel):
     # Translate the GPIO based on the current gpio_mode
-    channel_int = get_gpio_number(channel)
+    channel_int = get_gpio_number(channel, valueOffset)
     if channel_int == None:
         return
     # Get direction of requested GPIO
